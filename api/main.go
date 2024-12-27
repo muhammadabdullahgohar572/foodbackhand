@@ -249,7 +249,6 @@ func Handler(w http.ResponseWriter, r *http.Request) {
     router.HandleFunc("/login", login).Methods("POST")
     router.HandleFunc("/order", order).Methods("POST")
     router.HandleFunc("/contectus", contectu).Methods("POST")
-
     router.HandleFunc("/getOderDeatils", getOderDeatils).Methods("GET")
     router.HandleFunc("/decodeHandler/{token}", decodeHandler).Methods("GET")
 
