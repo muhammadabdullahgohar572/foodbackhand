@@ -213,7 +213,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	router.HandleFunc("/login", login).Methods("POST")
 	router.HandleFunc("/order", order).Methods("POST")
 	router.HandleFunc("/getOderDeatils", getOderDeatils).Methods("GET")
-	router.HandleFunc("/Decode{token}", Decode).Methods("GET")
+	// router.HandleFunc("/Decode{token}", Decode).Methods("GET")
 
 
 	
