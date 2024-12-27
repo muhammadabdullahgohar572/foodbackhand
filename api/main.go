@@ -6,9 +6,11 @@ import (
 	"log"
 	"net/http"
 	"time"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/crypto/bcrypt"
@@ -87,7 +89,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 	collection := client.Database("test").Collection("user")
 
 	var new user
-	err := collection.FindOne(context.TODO(), user{Email: login.Email}).Decode(&new)
+	err := collection.FindOne(context.TODO(), bson.M{"Email":login.Email}).Decode(&new);
 
 	if err != nil {
 		http.Error(w, "User not found", http.StatusNotFound)
