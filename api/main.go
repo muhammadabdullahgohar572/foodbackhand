@@ -1,12 +1,12 @@
 package handler
 
 import (
-	
 	"context"
 	"encoding/json"
 	"log"
 	"net/http"
-
+	"time"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -14,12 +14,21 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+type claims struct {
+	Username    string `json:"username"`
+	Email       string `json:"email"`
+	Password    string `json:"password"`
+	Location    string `json:"location"`
+	PhoneNumber string `json:"Phone_Number"`
+	jwt.StandardClaims
+}
+
 type user struct {
-	Username     string `json:"username"`
-	Email        string `json:"email"`
-	Password     string `json:"password"`
-	Location     string `json:"location"`
-	PhoneNumber  string `json:"Phone_Number"`
+	Username    string `json:"username"`
+	Email       string `json:"email"`
+	Password    string `json:"password"`
+	Location    string `json:"location"`
+	PhoneNumber string `json:"Phone_Number"`
 }
 
 var (
@@ -67,6 +76,54 @@ func signup(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func login(w http.ResponseWriter, r *http.Request) {
+	var login user
+
+	if err := json.NewDecoder(r.Body).Decode(&login); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	collection := client.Database("test").Collection("user")
+
+	var new user
+	err := collection.FindOne(context.TODO(), user{Email: login.Email}).Decode(&new)
+
+	if err != nil {
+		http.Error(w, "User not found", http.StatusNotFound)
+		return
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(new.Password), []byte(login.Password)); err != nil {
+		http.Error(w, "incorrected password ", http.StatusNotFound)
+		return
+	}
+
+	claims := &claims{
+
+		Username:    new.Username,
+		Email:       new.Email,
+		Password:    new.Password,
+		Location:    new.Location,
+		PhoneNumber: new.PhoneNumber,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(time.Hour * 72).Unix(),
+			Issuer:    "my-app",
+		},
+	}
+
+
+	token:=jwt.NewWithClaims(jwt.SigningMethodHS256,claims)
+
+	tokenString, err := token.SignedString([]byte("abdullah55"))
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"token": tokenString})
+
+
+
+}
+
 func helloHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"massage": "Hellow all ok han"})
@@ -76,6 +133,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	router := mux.NewRouter()
 	router.HandleFunc("/", helloHandler).Methods("GET")
 	router.HandleFunc("/signup", signup).Methods("POST")
+	router.HandleFunc("/login", login).Methods("POST")
 
 
 	corsHandler := cors.New(cors.Options{
