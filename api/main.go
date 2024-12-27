@@ -41,6 +41,14 @@ type cards struct {
 	Image  string `json:"image"`
 }
 
+
+type conactus struct{
+	Username    string `json:"username"`
+	Email       string `json:"email"`
+	Message    string `json:"message"`
+
+}
+
 var (
 	mongoURI = "mongodb+srv://muhammadabdullahgohar572:ilove1382005@cluster0.ifs70.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0" // Retrieve MongoDB URI from environment variable
 	client   *mongo.Client
@@ -206,28 +214,30 @@ func decodeHandler(w http.ResponseWriter, r *http.Request) {
     json.NewEncoder(w).Encode(claims)
 }
 
-
-
-// func decodeHandler(w http.ResponseWriter, r *http.Request) {
-// 	tokenString := mux.Vars(r)["token"]
-
-// 	claims := &Claims{}
-// 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-// 		return []byte("abdullah55"), nil
-// 	})
-
-// 	if err != nil || !token.Valid {
-// 		http.Error(w, "Invalid token", http.StatusUnauthorized)
-// 		return
-// 	}
-
-// 	w.WriteHeader(http.StatusOK)
-// 	json.NewEncoder(w).Encode(claims)
 // }
 
 func helloHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"massage": "Hellow all ok han"})
+}
+
+
+func contectu(w http.ResponseWriter, r *http.Request) {
+	var contact conactus
+	if err := json.NewDecoder(r.Body).Decode(&contact); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	contactCollection := client.Database("test").Collection("contacts")
+	_, err := contactCollection.InsertOne(context.TODO(), contact)
+	if err != nil {
+		http.Error(w, "Error saving contact details", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(map[string]string{"message": "Contact details submitted successfully"})
 }
 
 func Handler(w http.ResponseWriter, r *http.Request) {
@@ -238,6 +248,8 @@ func Handler(w http.ResponseWriter, r *http.Request) {
     router.HandleFunc("/signup", signup).Methods("POST")
     router.HandleFunc("/login", login).Methods("POST")
     router.HandleFunc("/order", order).Methods("POST")
+    router.HandleFunc("/contectus", contectu).Methods("POST")
+
     router.HandleFunc("/getOderDeatils", getOderDeatils).Methods("GET")
     router.HandleFunc("/decodeHandler/{token}", decodeHandler).Methods("GET")
 
