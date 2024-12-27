@@ -1,15 +1,26 @@
 package handler
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"log"
 	"net/http"
+
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"golang.org/x/crypto/bcrypt"
 )
+
+type user struct {
+	username     string `json:"username"`
+	Email        string `json:"email"`
+	password     string `json:"password"`
+	location     string `json:"location"`
+	Phone_Number string `json:"Phone_Number"`
+}
 
 var (
 	mongoURI = "mongodb+srv://muhammadabdullahgohar572:ilove1382005@cluster0.ifs70.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0" // Retrieve MongoDB URI from environment variable
@@ -25,6 +36,37 @@ func init() {
 	log.Println("Connected to MongoDB")
 }
 
+func signup(w http.ResponseWriter, r *http.Request) {
+	var newUser user
+	if err := json.NewDecoder(r.Body).Decode(&newUser); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newUser.password), bcrypt.DefaultCost)
+
+	if err != nil {
+		http.Error(w, "Error hashing password", http.StatusInternalServerError)
+		return
+	}
+
+	newUser.password = string(hashedPassword)
+
+	collection := client.Database("test").Collection("user")
+
+	_, err = collection.InsertOne(context.TODO(), newUser)
+
+	if err != nil {
+		http.Error(w, "Error inserting user", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(&newUser)
+
+}
+
 func helloHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"massage": "Hellow all ok han"})
@@ -33,6 +75,8 @@ func helloHandler(w http.ResponseWriter, r *http.Request) {
 func Handler(w http.ResponseWriter, r *http.Request) {
 	router := mux.NewRouter()
 	router.HandleFunc("/", helloHandler).Methods("GET")
+	router.HandleFunc("/signup", signup).Methods("POST")
+
 
 	corsHandler := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
@@ -41,5 +85,5 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		AllowCredentials: true,
 	}).Handler(router)
 
-	corsHandler.ServeHTTP(w,r)
+	corsHandler.ServeHTTP(w, r)
 }
