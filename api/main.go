@@ -15,10 +15,10 @@ import (
 )
 
 type user struct {
-	username     string `json:"username"`
+	Username     string `json:"username"`
 	Email        string `json:"email"`
-	password     string `json:"password"`
-	location     string `json:"location"`
+	Password     string `json:"password"`
+	Location     string `json:"location"`
 	Phone_Number string `json:"Phone_Number"`
 }
 
