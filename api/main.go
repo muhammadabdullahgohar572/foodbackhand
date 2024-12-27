@@ -213,22 +213,25 @@ func helloHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func Handler(w http.ResponseWriter, r *http.Request) {
-	router := mux.NewRouter()
-	router.HandleFunc("/", helloHandler).Methods("GET")
-	router.HandleFunc("/signup", signup).Methods("POST")
-	router.HandleFunc("/login", login).Methods("POST")
-	router.HandleFunc("/order", order).Methods("POST")
-	router.HandleFunc("/getOderDeatils", getOderDeatils).Methods("GET")
-	router.HandleFunc("/Decode/{token}", Decode).Methods("GET")
+    router := mux.NewRouter()
 
+    // Define routes
+    router.HandleFunc("/", helloHandler).Methods("GET")
+    router.HandleFunc("/signup", signup).Methods("POST")
+    router.HandleFunc("/login", login).Methods("POST")
+    router.HandleFunc("/order", order).Methods("POST")
+    router.HandleFunc("/getOderDeatils", getOderDeatils).Methods("GET")
+    router.HandleFunc("/Decode/{token}", Decode).Methods("GET")
 
-	
-	corsHandler := cors.New(cors.Options{
-		AllowedOrigins:   []string{"*"},
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
-		AllowedHeaders:   []string{"Content-Type"},
-		AllowCredentials: true,
-	}).Handler(router)
+    // CORS handling
+    corsHandler := cors.New(cors.Options{
+        AllowedOrigins:   []string{"*"},
+        AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
+        AllowedHeaders:   []string{"Content-Type"},
+        AllowCredentials: true,
+    }).Handler(router)
 
-	corsHandler.ServeHTTP(w, r)
+    // Serve HTTP request using the configured CORS handler
+    corsHandler.ServeHTTP(w, r)
 }
+
