@@ -89,7 +89,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 	collection := client.Database("test").Collection("user")
 
 	var new user
-	err := collection.FindOne(context.TODO(), bson.M{"Email":login.Email}).Decode(&new);
+	err := collection.FindOne(context.TODO(), bson.M{"email": login.Email}).Decode(&new)
 
 	if err != nil {
 		http.Error(w, "User not found", http.StatusNotFound)
@@ -114,15 +114,16 @@ func login(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-
-	token:=jwt.NewWithClaims(jwt.SigningMethodHS256,claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	tokenString, err := token.SignedString([]byte("abdullah55"))
 
+	if err != nil {
+		http.Error(w, "Error generating token", http.StatusInternalServerError)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"token": tokenString})
-
-
 
 }
 
@@ -136,7 +137,6 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	router.HandleFunc("/", helloHandler).Methods("GET")
 	router.HandleFunc("/signup", signup).Methods("POST")
 	router.HandleFunc("/login", login).Methods("POST")
-
 
 	corsHandler := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
