@@ -33,13 +33,11 @@ type user struct {
 	PhoneNumber string `json:"Phone_Number"`
 }
 
-
-
-type cards struct{
+type cards struct {
 	Tittle string `json:"tittle"`
-	Offer string `json:"Offer"`
+	Offer  string `json:"Offer"`
 	Prices string `json:"prices"`
-	Image string `json:"image"`
+	Image  string `json:"image"`
 }
 
 var (
@@ -55,8 +53,6 @@ func init() {
 	}
 	log.Println("Connected to MongoDB")
 }
-
-
 
 func order(w http.ResponseWriter, r *http.Request) {
 	var newoder cards
@@ -157,6 +153,31 @@ func login(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func getOderDeatils(w http.ResponseWriter, r *http.Request) {
+	collection := client.Database("test").Collection("items")
+	cusor, err := collection.Find(context.TODO(), bson.M{})
+	if err != nil {
+		http.Error(w, "Error fetching data", http.StatusInternalServerError)
+		return
+	}
+	defer cusor.Close(context.TODO())
+
+	var Oder []cards
+
+	if cusor.Next(context.TODO()) {
+		var orders cards
+		err := cusor.Decode(&orders)
+		if err != nil {
+			http.Error(w, "Error decoding data", http.StatusInternalServerError)
+			return
+		}
+		Oder = append(Oder, orders)
+	}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(&Oder)
+
+}
+
 func helloHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"massage": "Hellow all ok han"})
@@ -168,6 +189,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	router.HandleFunc("/signup", signup).Methods("POST")
 	router.HandleFunc("/login", login).Methods("POST")
 	router.HandleFunc("/order", order).Methods("POST")
+	router.HandleFunc("/getOderDeatils", getOderDeatils).Methods("GET")
 
 	
 	corsHandler := cors.New(cors.Options{
