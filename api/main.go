@@ -179,30 +179,21 @@ func getOderDeatils(w http.ResponseWriter, r *http.Request) {
 }
 
 
+func decodeHandler(w http.ResponseWriter, r *http.Request) {
+	tokenString := mux.Vars(r)["token"]
 
-func Decode(w http.ResponseWriter, r *http.Request) {
-    // Extract the token from the URL parameters
-    tokenString := mux.Vars(r)["token"]
-    if tokenString == "" {
-        http.Error(w, "Token is required", http.StatusBadRequest)
-        return
-    }
+	claims := &claims{}
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte("abdullah55"), nil
+	})
 
-    claims := &claims{}
+	if err != nil || !token.Valid {
+		http.Error(w, "Invalid token", http.StatusUnauthorized)
+		return
+	}
 
-    // Parse the token with claims
-    parsedToken, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-        return []byte("abdullah55"), nil // Replace "abdullah55" with a secure secret
-    })
-
-    if err != nil || !parsedToken.Valid {
-        http.Error(w, "Invalid or expired token", http.StatusUnauthorized)
-        return
-    }
-
-    // Respond with the decoded claims
-    w.WriteHeader(http.StatusOK)
-    json.NewEncoder(w).Encode(claims)
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(claims)
 }
 
 
@@ -221,7 +212,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
     router.HandleFunc("/login", login).Methods("POST")
     router.HandleFunc("/order", order).Methods("POST")
     router.HandleFunc("/getOderDeatils", getOderDeatils).Methods("GET")
-    router.HandleFunc("/Decode/{token}", Decode).Methods("GET")
+    router.HandleFunc("/decodeHandler/{token}", decodeHandler).Methods("GET")
 
     // CORS handling
     corsHandler := cors.New(cors.Options{
