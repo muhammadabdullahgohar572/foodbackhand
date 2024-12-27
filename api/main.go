@@ -179,24 +179,50 @@ func getOderDeatils(w http.ResponseWriter, r *http.Request) {
 }
 
 
+
 func decodeHandler(w http.ResponseWriter, r *http.Request) {
-	tokenString := mux.Vars(r)["token"]
+    // Extract the token from the URL parameters
+    tokenString := mux.Vars(r)["token"]
+    if tokenString == "" {
+        http.Error(w, "Token is required", http.StatusBadRequest)
+        return
+    }
 
-	claims := &claims{}
-	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		return []byte("abdullah55"), nil
-	})
+    claims := &claims{}
 
-	if err != nil || !token.Valid {
-		http.Error(w, "Invalid token", http.StatusUnauthorized)
-		return
-	}
+    // Parse the token with claims
+    parsedToken, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+        return []byte("abdullah55"), nil // Replace "abdullah55" with a secure secret
+    })
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(claims)
+    if err != nil || !parsedToken.Valid {
+        http.Error(w, "Invalid or expired token", http.StatusUnauthorized)
+        return
+    }
+
+    // Respond with the decoded claims
+    w.WriteHeader(http.StatusOK)
+    json.NewEncoder(w).Encode(claims)
 }
 
 
+
+// func decodeHandler(w http.ResponseWriter, r *http.Request) {
+// 	tokenString := mux.Vars(r)["token"]
+
+// 	claims := &Claims{}
+// 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+// 		return []byte("abdullah55"), nil
+// 	})
+
+// 	if err != nil || !token.Valid {
+// 		http.Error(w, "Invalid token", http.StatusUnauthorized)
+// 		return
+// 	}
+
+// 	w.WriteHeader(http.StatusOK)
+// 	json.NewEncoder(w).Encode(claims)
+// }
 
 func helloHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
