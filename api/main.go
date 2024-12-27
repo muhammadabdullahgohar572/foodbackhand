@@ -33,6 +33,15 @@ type user struct {
 	PhoneNumber string `json:"Phone_Number"`
 }
 
+
+
+type cards struct{
+	Tittle string `json:"tittle"`
+	Offer string `json:"Offer"`
+	Prices string `json:"prices"`
+	Image string `json:"image"`
+}
+
 var (
 	mongoURI = "mongodb+srv://muhammadabdullahgohar572:ilove1382005@cluster0.ifs70.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0" // Retrieve MongoDB URI from environment variable
 	client   *mongo.Client
@@ -45,6 +54,27 @@ func init() {
 		log.Fatal("DB connection error:", err)
 	}
 	log.Println("Connected to MongoDB")
+}
+
+
+
+func order(w http.ResponseWriter, r *http.Request) {
+	var newoder cards
+	if err := json.NewDecoder(r.Body).Decode(&newoder); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	collection := client.Database("test").Collection("items")
+	_, err := collection.InsertOne(context.TODO(), newoder)
+	if err != nil {
+		http.Error(w, "Error inserting user", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(&newoder)
+
 }
 
 func signup(w http.ResponseWriter, r *http.Request) {
@@ -137,7 +167,9 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	router.HandleFunc("/", helloHandler).Methods("GET")
 	router.HandleFunc("/signup", signup).Methods("POST")
 	router.HandleFunc("/login", login).Methods("POST")
+	router.HandleFunc("/order", order).Methods("POST")
 
+	
 	corsHandler := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
