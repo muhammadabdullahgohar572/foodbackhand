@@ -35,7 +35,7 @@ type user struct {
 
 type cards struct {
 	Category  string `json:"category"`
-	Tittle string `json:"tittle"`
+	Tittle string `json:"title"`
 	Offer  string `json:"Offer"`
 	Prices string `json:"prices"`
 	Image  string `json:"image"`
