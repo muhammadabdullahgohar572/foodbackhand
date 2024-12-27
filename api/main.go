@@ -178,6 +178,29 @@ func getOderDeatils(w http.ResponseWriter, r *http.Request) {
 
 }
 
+
+
+func Decode(w http.ResponseWriter, r *http.Request) {
+	tokenString := mux.Vars(r)["token"];
+    claims :=&claims{}
+
+	claimss,err :=jwt.ParseWithClaims(tokenString,claims,func(token *jwt.Token) (interface{}, error) {
+		return []byte("abdullah55"), nil
+	})
+	
+
+
+	if err!= nil ||!claimss.Valid {
+        http.Error(w, "Invalid token", http.StatusUnauthorized)
+        return
+    }
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(&claims)
+
+}
+
+
 func helloHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"massage": "Hellow all ok han"})
