@@ -19,7 +19,7 @@ type user struct {
 	Email        string `json:"email"`
 	Password     string `json:"password"`
 	Location     string `json:"location"`
-	Phone_Number string `json:"Phone_Number"`
+	PhoneNumber  string `json:"Phone_Number"`
 }
 
 var (
