@@ -25,6 +25,14 @@ type claims struct {
 	jwt.StandardClaims
 }
 
+
+type oderbook struct{
+	Username    string `json:"username"`
+	Location    string `json:"location"`
+	PhoneNumber string `json:"Phone_Number"` 
+	 Instructions    string `json:"Instructions"`
+
+}
 type user struct {
 	Username    string `json:"username"`
 	Email       string `json:"email"`
@@ -246,6 +254,26 @@ func contectu(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"message": "Contact details submitted successfully"})
 }
 
+
+func anyoderbook(w http.ResponseWriter, r *http.Request) {
+	var orders oderbook
+	if err := json.NewDecoder(r.Body).Decode(&orders); err!= nil {
+        w.WriteHeader(http.StatusBadRequest)
+        http.Error(w, "Invalid request body", http.StatusBadRequest)
+        return
+    }
+
+ collection:=client.Database("test").Collection("oderbookDeatils");
+ _,err:=collection.InsertOne(context.TODO(),orders)
+ if err!= nil {
+        http.Error(w, "Error saving order book details", http.StatusInternalServerError)
+        return
+    }
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(&orders)
+
+}
+
 func Handler(w http.ResponseWriter, r *http.Request) {
     router := mux.NewRouter()
 
@@ -255,6 +283,8 @@ func Handler(w http.ResponseWriter, r *http.Request) {
     router.HandleFunc("/login", login).Methods("POST")
     router.HandleFunc("/order", order).Methods("POST")
     router.HandleFunc("/contectus", contectu).Methods("POST")
+    router.HandleFunc("/anyoderbook", anyoderbook).Methods("POST")
+
     router.HandleFunc("/getOderDeatils", getOderDeatils).Methods("GET")
     router.HandleFunc("/decodeHandler/{token}", decodeHandler).Methods("GET")
 
