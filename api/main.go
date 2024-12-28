@@ -163,29 +163,35 @@ func login(w http.ResponseWriter, r *http.Request) {
 }
 
 func getOderDeatils(w http.ResponseWriter, r *http.Request) {
-	collection := client.Database("test").Collection("items")
-	cusor, err := collection.Find(context.TODO(), bson.M{})
-	if err != nil {
-		http.Error(w, "Error fetching data", http.StatusInternalServerError)
-		return
-	}
-	defer cusor.Close(context.TODO())
+    collection := client.Database("test").Collection("items")
+    cursor, err := collection.Find(context.TODO(), bson.M{})
+    if err != nil {
+        http.Error(w, "Error fetching data", http.StatusInternalServerError)
+        return
+    }
+    defer cursor.Close(context.TODO())
 
-	var Oder []cards
+    var orders []cards
 
-	if cusor.Next(context.TODO()) {
-		var orders cards
-		err := cusor.Decode(&orders)
-		if err != nil {
-			http.Error(w, "Error decoding data", http.StatusInternalServerError)
-			return
-		}
-		Oder = append(Oder, orders)
-	}
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(&Oder)
+    for cursor.Next(context.TODO()) {
+        var order cards
+        err := cursor.Decode(&order)
+        if err != nil {
+            http.Error(w, "Error decoding data", http.StatusInternalServerError)
+            return
+        }
+        orders = append(orders, order)
+    }
 
+    if err := cursor.Err(); err != nil {
+        http.Error(w, "Cursor error", http.StatusInternalServerError)
+        return
+    }
+
+    w.WriteHeader(http.StatusOK)
+    json.NewEncoder(w).Encode(&orders)
 }
+
 
 
 
