@@ -25,13 +25,13 @@ type claims struct {
 	jwt.StandardClaims
 }
 
-
-type oderbook struct{
-	Username    string `json:"username"`
-	Location    string `json:"location"`
-	PhoneNumber string `json:"Phone_Number"` 
-	Instructions    string `json:"Instructions"`
-	Rates    string `json:"Rates"`
+type oderbook struct {
+	Username     string `json:"username"`
+	Location     string `json:"location"`
+	PhoneNumber  string `json:"Phone_Number"`
+	Instructions string `json:"Instructions"`
+	Rates        string `json:"rates"`
+	Quntity        string `json:"quntity"`
 
 }
 type user struct {
@@ -43,19 +43,17 @@ type user struct {
 }
 
 type cards struct {
-	Category  string `json:"category"`
-	Tittle string `json:"title"`
-	Offer  string `json:"Offer"`
-	Prices string `json:"prices"`
-	Image  string `json:"image"`
+	Category string `json:"category"`
+	Tittle   string `json:"title"`
+	Offer    string `json:"Offer"`
+	Prices   string `json:"prices"`
+	Image    string `json:"image"`
 }
 
-
-type conactus struct{
-	Username    string `json:"username"`
-	Email       string `json:"email"`
-	Message    string `json:"message"`
-
+type conactus struct {
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Message  string `json:"message"`
 }
 
 var (
@@ -172,61 +170,58 @@ func login(w http.ResponseWriter, r *http.Request) {
 }
 
 func getOderDeatils(w http.ResponseWriter, r *http.Request) {
-    collection := client.Database("test").Collection("items")
-    cursor, err := collection.Find(context.TODO(), bson.M{})
-    if err != nil {
-        http.Error(w, "Error fetching data", http.StatusInternalServerError)
-        return
-    }
-    defer cursor.Close(context.TODO())
+	collection := client.Database("test").Collection("items")
+	cursor, err := collection.Find(context.TODO(), bson.M{})
+	if err != nil {
+		http.Error(w, "Error fetching data", http.StatusInternalServerError)
+		return
+	}
+	defer cursor.Close(context.TODO())
 
-    var orders []cards
+	var orders []cards
 
-    for cursor.Next(context.TODO()) {
-        var order cards
-        err := cursor.Decode(&order)
-        if err != nil {
-            http.Error(w, "Error decoding data", http.StatusInternalServerError)
-            return
-        }
-        orders = append(orders, order)
-    }
+	for cursor.Next(context.TODO()) {
+		var order cards
+		err := cursor.Decode(&order)
+		if err != nil {
+			http.Error(w, "Error decoding data", http.StatusInternalServerError)
+			return
+		}
+		orders = append(orders, order)
+	}
 
-    if err := cursor.Err(); err != nil {
-        http.Error(w, "Cursor error", http.StatusInternalServerError)
-        return
-    }
+	if err := cursor.Err(); err != nil {
+		http.Error(w, "Cursor error", http.StatusInternalServerError)
+		return
+	}
 
-    w.WriteHeader(http.StatusOK)
-    json.NewEncoder(w).Encode(&orders)
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(&orders)
 }
 
-
-
-
 func decodeHandler(w http.ResponseWriter, r *http.Request) {
-    // Extract the token from the URL parameters
-    tokenString := mux.Vars(r)["token"]
-    if tokenString == "" {
-        http.Error(w, "Token is required", http.StatusBadRequest)
-        return
-    }
+	// Extract the token from the URL parameters
+	tokenString := mux.Vars(r)["token"]
+	if tokenString == "" {
+		http.Error(w, "Token is required", http.StatusBadRequest)
+		return
+	}
 
-    claims := &claims{}
+	claims := &claims{}
 
-    // Parse the token with claims
-    parsedToken, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-        return []byte("abdullah55"), nil // Replace "abdullah55" with a secure secret
-    })
+	// Parse the token with claims
+	parsedToken, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte("abdullah55"), nil // Replace "abdullah55" with a secure secret
+	})
 
-    if err != nil || !parsedToken.Valid {
-        http.Error(w, "Invalid or expired token", http.StatusUnauthorized)
-        return
-    }
+	if err != nil || !parsedToken.Valid {
+		http.Error(w, "Invalid or expired token", http.StatusUnauthorized)
+		return
+	}
 
-    // Respond with the decoded claims
-    w.WriteHeader(http.StatusOK)
-    json.NewEncoder(w).Encode(claims)
+	// Respond with the decoded claims
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(claims)
 }
 
 // }
@@ -235,7 +230,6 @@ func helloHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"massage": "Hellow all ok han"})
 }
-
 
 func contectu(w http.ResponseWriter, r *http.Request) {
 	var contact conactus
@@ -255,49 +249,47 @@ func contectu(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"message": "Contact details submitted successfully"})
 }
 
-
 func anyoderbook(w http.ResponseWriter, r *http.Request) {
 	var orders oderbook
-	if err := json.NewDecoder(r.Body).Decode(&orders); err!= nil {
-        w.WriteHeader(http.StatusBadRequest)
-        http.Error(w, "Invalid request body", http.StatusBadRequest)
-        return
-    }
+	if err := json.NewDecoder(r.Body).Decode(&orders); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
 
- collection:=client.Database("test").Collection("oderbookDeatils");
- _,err:=collection.InsertOne(context.TODO(),orders)
- if err!= nil {
-        http.Error(w, "Error saving order book details", http.StatusInternalServerError)
-        return
-    }
+	collection := client.Database("test").Collection("oderbookDeatils")
+	_, err := collection.InsertOne(context.TODO(), orders)
+	if err != nil {
+		http.Error(w, "Error saving order book details", http.StatusInternalServerError)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(&orders)
 
 }
 
 func Handler(w http.ResponseWriter, r *http.Request) {
-    router := mux.NewRouter()
+	router := mux.NewRouter()
 
-    // Define routes
-    router.HandleFunc("/", helloHandler).Methods("GET")
-    router.HandleFunc("/signup", signup).Methods("POST")
-    router.HandleFunc("/login", login).Methods("POST")
-    router.HandleFunc("/order", order).Methods("POST")
-    router.HandleFunc("/contectus", contectu).Methods("POST")
-    router.HandleFunc("/anyoderbook", anyoderbook).Methods("POST")
+	// Define routes
+	router.HandleFunc("/", helloHandler).Methods("GET")
+	router.HandleFunc("/signup", signup).Methods("POST")
+	router.HandleFunc("/login", login).Methods("POST")
+	router.HandleFunc("/order", order).Methods("POST")
+	router.HandleFunc("/contectus", contectu).Methods("POST")
+	router.HandleFunc("/anyoderbook", anyoderbook).Methods("POST")
 
-    router.HandleFunc("/getOderDeatils", getOderDeatils).Methods("GET")
-    router.HandleFunc("/decodeHandler/{token}", decodeHandler).Methods("GET")
+	router.HandleFunc("/getOderDeatils", getOderDeatils).Methods("GET")
+	router.HandleFunc("/decodeHandler/{token}", decodeHandler).Methods("GET")
 
-    // CORS handling
-    corsHandler := cors.New(cors.Options{
-        AllowedOrigins:   []string{"*"},
-        AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
-        AllowedHeaders:   []string{"Content-Type"},
-        AllowCredentials: true,
-    }).Handler(router)
+	// CORS handling
+	corsHandler := cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
+		AllowedHeaders:   []string{"Content-Type"},
+		AllowCredentials: true,
+	}).Handler(router)
 
-    // Serve HTTP request using the configured CORS handler
-    corsHandler.ServeHTTP(w, r)
+	// Serve HTTP request using the configured CORS handler
+	corsHandler.ServeHTTP(w, r)
 }
-
