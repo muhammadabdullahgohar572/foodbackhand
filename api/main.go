@@ -30,7 +30,8 @@ type oderbook struct{
 	Username    string `json:"username"`
 	Location    string `json:"location"`
 	PhoneNumber string `json:"Phone_Number"` 
-	 Instructions    string `json:"Instructions"`
+	Instructions    string `json:"Instructions"`
+	Rates    string `json:"Rates"`
 
 }
 type user struct {
