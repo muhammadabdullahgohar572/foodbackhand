@@ -26,15 +26,13 @@ type claims struct {
 }
 
 type oderbook struct {
-	Tittle string `json:"tittle"`
+	Tittle       string `json:"tittle"`
 	Username     string `json:"username"`
 	Location     string `json:"location"`
 	PhoneNumber  string `json:"Phone_Number"`
 	Instructions string `json:"Instructions"`
 	Rates        string `json:"rates"`
 	Quntity      string `json:"quntity"`
-	
-
 }
 type user struct {
 	Username    string `json:"username"`
@@ -56,6 +54,8 @@ type conactus struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`
 	Message  string `json:"message"`
+	number  string `json:"number"`
+
 }
 
 var (
