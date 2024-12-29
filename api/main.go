@@ -54,7 +54,7 @@ type conactus struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`
 	Message  string `json:"message"`
-	number  string `json:"number"`
+	Number  string `json:"number"`
 
 }
 
