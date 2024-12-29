@@ -26,12 +26,14 @@ type claims struct {
 }
 
 type oderbook struct {
+	Tittle string `json:"tittle"`
 	Username     string `json:"username"`
 	Location     string `json:"location"`
 	PhoneNumber  string `json:"Phone_Number"`
 	Instructions string `json:"Instructions"`
 	Rates        string `json:"rates"`
-	Quntity        string `json:"quntity"`
+	Quntity      string `json:"quntity"`
+	
 
 }
 type user struct {
